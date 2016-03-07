@@ -29,19 +29,12 @@ class kibana::config (
 ){
 
   if versioncmp($version, '4.4.1') >= 0 {
-    if ($conf == undef) {
-      $instance_config = {}
-    } else {
-      validate_hash($conf)
-      $instance_config = $conf
-    }
-
     datacat_fragment { "main_config_${name}":
       target => "${install_path}/kibana/config/kibana.yml",
-      data   => $instance_conf,
+      data   => $conf,
     }
 
-    datacat { "$${install_path}/kibana/config/kibana.yml":
+    datacat { "${install_path}/kibana/config/kibana.yml":
       template => 'kibana/kibana-4.4.x.yml.erb',
       owner    => 'kibana',
       group    => 'kibana',

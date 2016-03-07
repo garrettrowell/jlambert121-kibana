@@ -117,8 +117,6 @@ class kibana (
   $verify_ssl              = $::kibana::params::verify_ssl,
   $base_path               = $::kibana::params::base_path,
   $log_file                = $::kibana::params::log_file,
-
-# make sure these exist
   $package_name            = $::kibana::params::package_name,
   $package_pin             = $::kibana::params::package_pin,
   $repo_version            = $::kibana::params::repo_version,

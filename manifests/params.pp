@@ -28,14 +28,12 @@ class kibana::params {
   $user                   = 'kibana'
   $base_path              = undef
   $log_file               = '/var/log/kibana/kibana.log'
-
-#make sure these setup
   $manage_repo            = false
   $package_pin            = true
   $repo_version           = '4.4'
   $repo_key_id            = 'D88E42B4'
   $repo_key_source        = 'http://packages.elastic.co/GPG-KEY-elasticsearch'
-  $conf                   = undef
+  $conf                   = {}
 
   case $::osfamily {
     'RedHat': {

@@ -16,7 +16,7 @@ class kibana::install (
 ) {
 
   # repo is only avaliable for kibana 4.4.1 and above
-  if ($manage_repo and versioncmp($version, '4.4.1') >= 0) {
+  if ( $manage_repo and versioncmp($version, '4.4.1') >= 0 ) {
     include ::kibana::repo
 
     package { $kibana::package_name:
