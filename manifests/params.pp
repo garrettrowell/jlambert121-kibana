@@ -4,7 +4,7 @@
 #
 #
 class kibana::params {
-  $version                = '4.0.1'
+  $version                = '4.4.1'
   $base_url               = 'https://download.elasticsearch.org/kibana/kibana'
   $ca_cert                = undef
   $install_path           = '/opt'
@@ -28,6 +28,27 @@ class kibana::params {
   $user                   = 'kibana'
   $base_path              = undef
   $log_file               = '/var/log/kibana/kibana.log'
+
+#make sure these setup
+  $manage_repo            = false
+  $package_pin            = true
+  $repo_version           = '4.4'
+  $repo_key_id            = 'D88E42B4'
+  $repo_key_source        = 'http://packages.elastic.co/GPG-KEY-elasticsearch'
+  $conf                   = undef
+
+  case $::osfamily {
+    'RedHat': {
+      $package_name = 'kibana'
+    }
+    'Debian': {
+      $package_name = 'kibana'
+    }
+    default: {
+      fail("\"${module_name}\" provides no package default value for
+        \"${::operatingsystem}\"")
+    }
+  }
 
   case $::operatingsystem {
     'RedHat', 'CentOS', 'Fedora', 'Scientific', 'OracleLinux', 'SLC': {

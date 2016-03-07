@@ -61,7 +61,8 @@
 #   Default: discover
 #
 # [*request_timeout*]
-#   Integer.  Time in milliseconds to wait for responses from the back end or elasticsearch.
+#   Integer.  Time in milliseconds to wait for responses from the back
+#   end or elasticsearch.
 #   Default: 300000
 #
 # [*ssl_cert_file*]
@@ -73,7 +74,8 @@
 #   Default: undef
 #
 # [*shard_timeout*]
-#   String.  Time in milliseconds for Elasticsearch to wait for responses from shards.
+#   String.  Time in milliseconds for Elasticsearch to wait for responses
+#   from shards.
 #   Default: 0
 #
 # [*legacy_service_mode*]
@@ -91,40 +93,50 @@
 #
 #
 class kibana (
-  $version                = $::kibana::params::version,
-  $base_url               = $::kibana::params::base_url,
-  $ca_cert                = $::kibana::params::ca_cert,
-  $install_path           = $::kibana::params::install_path,
-  $tmp_dir                = $::kibana::params::tmp_dir,
-  $port                   = $::kibana::params::port,
-  $bind                   = $::kibana::params::bind,
-  $es_url                 = $::kibana::params::es_url,
-  $es_preserve_host       = $::kibana::params::es_preserve_host,
-  $kibana_index           = $::kibana::params::kibana_index,
-  $elasticsearch_username = $::kibana::params::elasticsearch_username,
-  $elasticsearch_password = $::kibana::params::elasticsearch_password,
-  $default_app_id         = $::kibana::params::default_app_id,
-  $pid_file               = $::kibana::params::pid_file,
-  $plugins                = $::kibana::params::plugins,
-  $request_timeout        = $::kibana::params::request_timeout,
-  $shard_timeout          = $::kibana::params::shard_timeout,
-  $ping_timeout           = $::kibana::params::ping_timeout,
-  $startup_timeout        = $::kibana::params::startup_timeout,
-  $ssl_cert_file          = $::kibana::params::ssl_cert_file,
-  $ssl_key_file           = $::kibana::params::ssl_key_file,
-  $verify_ssl             = $::kibana::params::verify_ssl,
-  $base_path              = $::kibana::params::base_path,
-  $log_file               = $::kibana::params::log_file,
+  $version                 = $::kibana::params::version,
+  $base_url                = $::kibana::params::base_url,
+  $ca_cert                 = $::kibana::params::ca_cert,
+  $install_path            = $::kibana::params::install_path,
+  $tmp_dir                 = $::kibana::params::tmp_dir,
+  $port                    = $::kibana::params::port,
+  $bind                    = $::kibana::params::bind,
+  $es_url                  = $::kibana::params::es_url,
+  $es_preserve_host        = $::kibana::params::es_preserve_host,
+  $kibana_index            = $::kibana::params::kibana_index,
+  $elasticsearch_username  = $::kibana::params::elasticsearch_username,
+  $elasticsearch_password  = $::kibana::params::elasticsearch_password,
+  $default_app_id          = $::kibana::params::default_app_id,
+  $pid_file                = $::kibana::params::pid_file,
+  $plugins                 = $::kibana::params::plugins,
+  $request_timeout         = $::kibana::params::request_timeout,
+  $shard_timeout           = $::kibana::params::shard_timeout,
+  $ping_timeout            = $::kibana::params::ping_timeout,
+  $startup_timeout         = $::kibana::params::startup_timeout,
+  $ssl_cert_file           = $::kibana::params::ssl_cert_file,
+  $ssl_key_file            = $::kibana::params::ssl_key_file,
+  $verify_ssl              = $::kibana::params::verify_ssl,
+  $base_path               = $::kibana::params::base_path,
+  $log_file                = $::kibana::params::log_file,
+
+# make sure these exist
+  $package_name            = $::kibana::params::package_name,
+  $package_pin             = $::kibana::params::package_pin,
+  $repo_version            = $::kibana::params::repo_version,
+  $repo_key_id             = $::kibana::params::repo_key_id,
+  $repo_key_source         = $::kibana::params::repo_key_source,
+  $conf                    = $::kibana::params::conf,
 ) inherits kibana::params {
 
   if !is_integer($port) {
     fail("Class['kibana']: port must be an integer.  Received: ${port}")
   }
   if !is_integer($request_timeout) or $request_timeout < 1 {
-    fail("Class['kibana']: request_timeout must be an integer greater than 0.  Received: ${$request_timeout}")
+    fail("Class['kibana']: request_timeout must be an integer greater
+      than 0.  Received: ${$request_timeout}")
   }
   if !is_integer($shard_timeout) or $shard_timeout < 0 {
-    fail("Class['kibana']: shard_timeout must be an integer 0 or greater.  Received: ${$shard_timeout}")
+    fail("Class['kibana']: shard_timeout must be an integer 0 or greater.
+      Received: ${$shard_timeout}")
   }
   validate_absolute_path($install_path)
   validate_absolute_path($tmp_dir)
@@ -138,6 +150,40 @@ class kibana (
 
   if ( $ssl_key_file != undef) {
     validate_absolute_path($ssl_key_file)
+  }
+
+  if ($::kibana::package_url != undef and $version != false) {
+    fail('Unable to set the version number when using package_url option.')
+  }
+
+  # validate config hash
+  if ($::kibana::conf != undef) {
+    validate_hash($::kibana::conf)
+  }
+
+  validate_bool($::kibana::manage_repo)
+
+  if ($::kibana::manage_repo == true) {
+    if $::kibana::repo_version == undef {
+      fail('Please fill in a repository version at $repo_version')
+    } else {
+      validate_string($::kibana::repo_version)
+    }
+  }
+
+  if ($version != false) {
+    case $::osfamily {
+      'RedHat', 'Linux', 'Suse': {
+        if ($version =~ /.+-\d/) {
+          $pkg_version = $version
+        } else {
+          $pkg_version = "${version}-1"
+        }
+      }
+      default: {
+        $pkg_version = $version
+      }
+    }
   }
 
   class { '::kibana::install': } ->

@@ -25,22 +25,45 @@ class kibana::config (
   $verify_ssl             = $::kibana::verify_ssl,
   $base_path              = $::kibana::base_path,
   $log_file               = $::kibana::log_file,
+  $conf                   = $::kibana::conf,
 ){
 
-  if versioncmp($version, '4.2.0') < 0 {
-    if $base_path {
-      fail('Kibana config: server.basePath is not supported for kibana 4.1 and lower')
+  if versioncmp($version, '4.4.1') >= 0 {
+    if ($conf == undef) {
+      $instance_config = {}
+    } else {
+      validate_hash($conf)
+      $instance_config = $conf
     }
-    $template = 'kibana-4.0-4.1.yml'
-  } else {
-    $template = 'kibana-4.2-4.4.yml'
-  }
 
-  file { "${install_path}/kibana/config/kibana.yml":
-    ensure  => 'file',
-    owner   => 'kibana',
-    group   => 'kibana',
-    mode    => '0440',
-    content => template("kibana/${template}.erb"),
+    datacat_fragment { "main_config_${name}":
+      target => "${install_path}/kibana/config/kibana.yml",
+      data   => $instance_conf,
+    }
+
+    datacat { "$${install_path}/kibana/config/kibana.yml":
+      template => 'kibana/kibana-4.4.x.yml.erb',
+      owner    => 'kibana',
+      group    => 'kibana',
+      mode     => '0440',
+    }
+  } else {
+    if versioncmp($version, '4.2.0') < 0 {
+      if $base_path {
+        fail('Kibana config: server.basePath is not supported
+          for kibana 4.1 and lower')
+      }
+      $template = 'kibana-4.0-4.1.yml'
+    } else {
+      $template = 'kibana-4.2-4.4.yml'
+    }
+
+    file { "${install_path}/kibana/config/kibana.yml":
+      ensure  => 'file',
+      owner   => 'kibana',
+      group   => 'kibana',
+      mode    => '0440',
+      content => template("kibana/${template}.erb"),
+    }
   }
 }
