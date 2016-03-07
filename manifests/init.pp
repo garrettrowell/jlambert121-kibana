@@ -125,6 +125,7 @@ class kibana (
   $repo_key_id             = $::kibana::params::repo_key_id,
   $repo_key_source         = $::kibana::params::repo_key_source,
   $conf                    = $::kibana::params::conf,
+  $manage_repo             = $::kibana::params::manage_repo,
 ) inherits kibana::params {
 
   if !is_integer($port) {
